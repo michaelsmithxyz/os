@@ -10,7 +10,6 @@
 uintptr_t kmalloc(size_t size);
 uintptr_t kamalloc(size_t size);
 
-void init_physpage_map(size_t memory);
-void parse_mb_map(multiboot_info_t *mbd);
+void init_page_frame_map(size_t memory);
 
 #endif

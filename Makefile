@@ -10,7 +10,7 @@ LDFLAGS = -T link.ld -melf_i386
 CFLAGS = -g -c -m32 -nostdlib -nostdinc -fno-builtin -fno-stack-protector
 CFLAGS += -nostartfiles -nodefaultlibs -Wall
 
-INC = -Iinclude/
+INC = -I./include/
 
 ASFLAGS = -g -f elf32
 
