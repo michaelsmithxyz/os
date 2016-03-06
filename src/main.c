@@ -14,17 +14,20 @@ void k_main(multiboot_info_t *mbd, unsigned int magic) {
         return;
     }
     init_early_console();
-
+#if 0
     if(!(mbd->flags & 0x01)) {
         kprint("The bootloader isn't giving us any memory information\n");
         kprint("Terminating execution!\n");
     }
-
+#endif
     size_t kernel_size = &kernel_end - &kernel_start;
+    kprint("Loaded at: ");
+    kprint_hex(&kernel_start, 8);
+    kprint("\n");
     kprint("Kernel size: ");
     kprint_hex(kernel_size, 8);
     kprint(" Bytes\n");
-    
+#if 0
     init_page_frame_map(mbd->mem_lower + mbd->mem_upper);
     if(mbd->flags & (1 << 6)) {
         multiboot_memory_map_t *mmap = (multiboot_memory_map_t *) mbd->mmap_addr; 
@@ -45,4 +48,5 @@ void k_main(multiboot_info_t *mbd, unsigned int magic) {
     for(uintptr_t addr = 0; addr < kmalloc_ptr; addr += PAGE_SIZE) {
         mark_frame(addr);
     }
+#endif
 }

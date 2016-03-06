@@ -1,5 +1,8 @@
 [bits 32]
 
+KERNEL_BASE_ADDR equ 0xC0000000
+KERNEL_TABLE_OFFSET equ (KERNEL_BASE_ADDR >> 22) * 4
+
 section .multiboot
     MAGIC_NUMBER equ 0x1BADB002
     MEMINFO      equ 1 << 1
@@ -17,14 +20,52 @@ section .text:
     [extern k_main]
 
     loader:
+        mov esp, stack_top - KERNEL_BASE_ADDR
+        ;call load_gdt
+        call enable_paging
         mov esp, stack_top
-        call load_gdt
+        lea ecx, [high_half]
+        jmp ecx
+    high_half:
         push eax
         push ebx
         call k_main
 
         .loop:
             jmp .loop
+
+    enable_paging:
+        push eax
+        push ebx
+        mov eax, page_table
+        sub eax, KERNEL_BASE_ADDR
+        or eax, 1
+        mov ebx, page_directory
+        sub ebx, KERNEL_BASE_ADDR
+        mov [ebx], eax
+        add ebx, KERNEL_TABLE_OFFSET
+        mov [ebx], eax
+
+        ; Map the first 4 MB in our table
+        mov ebx, 0x1000
+        mov ecx, 0
+        .map_table:
+            mov eax, ecx
+            mul ebx
+            or eax, 0x3
+            mov [(page_table - KERNEL_BASE_ADDR) + ecx * 4], eax
+            inc ecx
+            cmp ecx, 0x300
+            jne .map_table
+        mov eax, page_directory
+        sub eax, KERNEL_BASE_ADDR
+        mov cr3, eax
+        mov eax, cr0
+        or eax, 0x80000000
+        mov cr0, eax
+        pop ebx
+        pop eax
+        ret
 
     global install_page_directory
     install_page_directory:
@@ -66,3 +107,9 @@ section .bss
     stack_bottom:
         resb 0x4000
     stack_top:
+    
+    align 0x1000
+    page_directory:
+        resb 0x1000
+    page_table:
+        resb 0x1000

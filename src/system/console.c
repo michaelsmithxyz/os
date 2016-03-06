@@ -47,7 +47,7 @@ void kprint(char *string) {
 void kprint_hex(unsigned int value, int width) {
     char buf[width + 3];
     int index = width + 1;
-    buf[width] = '\0';
+    buf[width + 2] = '\0';
     while(value > 0) {
         buf[index] = "0123456789ABCDEF"[value % 0x10];
         value = value / 0x10;
