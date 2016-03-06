@@ -17,8 +17,7 @@ section .text:
     [extern k_main]
 
     loader:
-        mov esp, kernel_stack + KERNEL_STACK_SIZE
-        call enable_paging
+        mov esp, stack_top
         call load_gdt
         push eax
         push ebx
@@ -27,49 +26,22 @@ section .text:
         .loop:
             jmp .loop
 
-    enable_paging:
-        push eax
-        push ebx
-        push ecx
-
-        mov eax, page_table
-        or eax, 1
-        mov [page_directory], eax
-        
-        ; Identity map the first 2 MiB of memory
-        mov ebx, 4096
-        mov ecx, 0
-        .map_table:
-            mov eax, ecx
-            mul ebx
-            or eax, 0x3
-            mov [page_table + ecx * 4], eax
-            inc ecx
-            cmp ecx, 0x300
-            jne .map_table
-
-        mov eax, page_directory
-        or eax, 3
-        mov [page_directory + 1023 * 4], eax
-
-        mov eax, page_directory
+    global install_page_directory
+    install_page_directory:
+        mov eax, [esp + 4]
         mov cr3, eax
-        mov eax, cr0
-        or eax, 0x80000000
+        mov ecx, cr0
+        or ecx, 0x80000000
         mov cr0, eax
-        
-        pop ecx
-        pop ebx
-        pop eax
         ret
 
     load_gdt:
         push eax
         lgdt [gdt.pointer]
         mov ax, gdt.data - gdt
-        mov ss, ax
         mov ds, ax
         mov es, ax
+        mov ss, ax
         jmp (gdt.code - gdt):load_gdt.far_jump
         
         .far_jump:
@@ -89,18 +61,8 @@ section .rodata
         dw $ - gdt - 1
         dd gdt
 
-
 section .bss
-    KERNEL_STACK_SIZE equ 4096
-    
-    alignb 4096
-    page_directory:
-        resb 4096
-    
-    alignb 4096
-    page_table:
-        resb 4096
-    
-    alignb 4
-    kernel_stack:
-        resb KERNEL_STACK_SIZE 
+    align 4
+    stack_bottom:
+        resb 0x4000
+    stack_top:
