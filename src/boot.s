@@ -1,4 +1,6 @@
-section .__mbHeader
+[bits 32]
+
+section .multiboot
     MAGIC_NUMBER equ 0x1BADB002
     MEMINFO      equ 1 << 1
     FLAGS        equ MEMINFO | 0x0
@@ -11,8 +13,8 @@ section .__mbHeader
 
 
 section .text:
-    global loader
-    extern k_main
+    [global loader]
+    [extern k_main]
 
     loader:
         mov esp, kernel_stack + KERNEL_STACK_SIZE

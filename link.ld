@@ -4,13 +4,9 @@ SECTIONS {
     . = 0x00100000;
     kernel_start = .;
 
-    .__mbHeader :
-    {
-        *(.__mbHeader)
-    }
-
     .text ALIGN (0x1000) :
     {
+        *(.multiboot)
         *(.text)
     }
 

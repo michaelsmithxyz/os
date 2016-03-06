@@ -21,6 +21,6 @@ void k_main(multiboot_info_t *mbd, unsigned int magic) {
     kprint_hex((&kernel_end - &kernel_start) * sizeof(int), 8);
     kprint(" Bytes\n");
     
-    init_physpage_map();
-    parse_mb_map(mbd);
+    init_physpage_map(mbd->mem_lower + mbd->mem_upper);
+    //parse_mb_map(mbd);
 }
